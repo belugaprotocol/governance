@@ -35,6 +35,27 @@ contract Power is ERC20("Beluga Power", "BP"), Governable {
         _mint(msg.sender, _amount);
     }
 
+    /// @notice Fetches the epoch-adjusted balance of an account.
+    /// @param _account Account to fetch the epoch adjusted balance of.
+    /// @return The epoch adjusted balance of `_account`.
+    function balanceOfEpochAdjusted(address _account) external view returns (uint256) {
+        // First we check if they're exempt or not.
+        if(epochExempt[_account]) {
+            // If they are, a simple `balanceOf` will suffice.
+            return balanceOf(_account);
+        } else {
+            // Else, we need to check the last epoch marked on their account.
+            if(balanceEpochMark[_account] != latestEpoch) {
+                // In the case of their marked epoch being outdated,
+                // we can simply return a pure value.
+                return 0;
+            } else {
+                // If they are in date with the latest epoch, balanceOf also suffices.
+                return balanceOf(_account);
+            }
+        }
+    }
+
     function _transfer(address _sender, address _recipient, uint256 _amount) internal override {
         // Check if the sender is exempt or not. If they aren't, we will reset
         // their balance and end the transfer there. If not, we can let them through.
