@@ -1,0 +1,2 @@
+forge create --rpc-url https://rpc.ftm.tools/ --private-key ${FOUNDRY_PRIVATE_KEY} --constructor-args 0x3710cE7e2E4887bd6A9215f780C78f7462544EfE src/Power.sol:Power
+forge flatten ./src/Power.sol > ./flats/Power.flat.sol # Just in-case verification fails.
