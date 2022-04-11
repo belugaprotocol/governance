@@ -12,6 +12,7 @@ contract Power is ERC20("Beluga Power", "BP"), Governable {
 
     constructor(address _store) Governable(_store) {
         epochExempt[governance()] = true;
+        latestEpoch++;
     }
 
     /// @notice Latest power epoch, the first epoch should be 1.
@@ -29,10 +30,29 @@ contract Power is ERC20("Beluga Power", "BP"), Governable {
     /// @notice Emitted when an account's balance is reset to the latest epoch.
     event ResetToNextEpoch(address indexed account, uint256 lastRecorded, uint256 latest);
 
+    /// @notice Advances to the latest epoch on the contract.
+    function advanceEpoch() external onlyGovernance {
+        latestEpoch++;
+    }
+
     /// @notice Mints new BP tokens.
     /// @param _amount Amount of BP to mint.
     function mint(uint256 _amount) external onlyGovernance {
         _mint(msg.sender, _amount);
+    }
+
+    /// @notice Exempts an address from BP epochs.
+    /// @param _toExempt Address to exempt from the epochs.
+    function exemptAddress(address _toExempt) external onlyGovernance {
+        epochExempt[_toExempt] = true;
+        balanceEpochMark[_toExempt] = 0; // Mark 0 is reserved for exempt addresses.
+    }
+
+    /// @notice Removes epoch exemption from an address.
+    /// @param _for Address to remove exemption for.
+    function removeExemption(address _for) external onlyGovernance {
+        epochExempt[_for] = false;
+        balanceEpochMark[_for] = latestEpoch; // Keep balances, but place the epoch as the latest.
     }
 
     /// @notice Fetches the epoch-adjusted balance of an account.
